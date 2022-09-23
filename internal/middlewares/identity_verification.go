@@ -131,6 +131,8 @@ func IdentityVerificationFinish(args IdentityVerificationFinishArgs, next func(c
 			return
 		}
 
+		ctx.Logger.Debugf("Token sent was '%s'", finishBody.Token)
+
 		token, err := jwt.ParseWithClaims(finishBody.Token, &model.IdentityVerificationClaim{},
 			func(token *jwt.Token) (interface{}, error) {
 				return []byte(ctx.Configuration.JWTSecret), nil
@@ -138,6 +140,8 @@ func IdentityVerificationFinish(args IdentityVerificationFinishArgs, next func(c
 
 		if err != nil {
 			if ve, ok := err.(*jwt.ValidationError); ok {
+				ctx.Logger.WithError(ve).WithField("inner_error", ve.Inner).WithField("errint", ve.Errors).Debugf("logged jwt parse error")
+
 				switch {
 				case ve.Errors&jwt.ValidationErrorMalformed != 0:
 					ctx.Error(fmt.Errorf("Cannot parse token"), messageOperationFailed)
