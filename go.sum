@@ -325,6 +325,8 @@ github.com/go-webauthn/revoke v0.1.3 h1:SU+/fD+Py4MMTqKnMfBJ5Td4skcvfWtjQbZnvT9p
 github.com/go-webauthn/revoke v0.1.3/go.mod h1:Vzr3vqXqGQVS21hYpbetmpIoN4HiSjv2gcZI7ltlneI=
 github.com/go-webauthn/webauthn v0.4.1-0.20220927010755-f01442ee8682 h1:5eohWns/M4OBhE7hflK6oc+Hq7EhAGX0gpmNap7hKMA=
 github.com/go-webauthn/webauthn v0.4.1-0.20220927010755-f01442ee8682/go.mod h1:7SdscKGIpkst6AtATGz+AL2RZNZHg6OjSpSWJIdpz0k=
+github.com/go-webauthn/webauthn v0.4.1-0.20221011005557-6953134fb498 h1:hmNrQJdZPaFMyeajJzOgegZJQ/Q3UHQoXghTeo8s6n8=
+github.com/go-webauthn/webauthn v0.4.1-0.20221011005557-6953134fb498/go.mod h1:0cmB4rhYW7VPs0Y/YGe4CBgrKesqm0Dx2f/ObOwfo7k=
 github.com/gobuffalo/attrs v0.0.0-20190224210810-a9411de4debd/go.mod h1:4duuawTqi2wkkpB4ePgWMaai6/Kc6WEz83bhFwpHzj0=
 github.com/gobuffalo/attrs v0.1.0/go.mod h1:fmNpaWyHM0tRm8gCZWKx8yY9fvaNLo2PyzBNSrBZ5Hw=
 github.com/gobuffalo/buffalo v0.12.8-0.20181004233540-fac9bb505aa8/go.mod h1:sLyT7/dceRXJUxSsE813JTQtA3Eb1vjxWfo/N//vXIY=
