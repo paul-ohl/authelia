@@ -117,6 +117,6 @@ require (
 )
 
 replace (
-	github.com/go-ldap/ldap/v3 => github.com/james-d-elliott/ldap/v3 v3.4.4-0.20221019092638-490f99650a72
+	github.com/go-ldap/ldap/v3 => github.com/james-d-elliott/ldap/v3 v3.4.4-0.20221019105056-3b744051bff8
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible => github.com/mattn/go-sqlite3 v1.14.14
 )
