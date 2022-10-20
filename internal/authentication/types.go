@@ -3,6 +3,7 @@ package authentication
 import (
 	"crypto/tls"
 	"net/mail"
+	"time"
 
 	"github.com/go-ldap/ldap/v3"
 	"golang.org/x/text/encoding/unicode"
@@ -10,23 +11,63 @@ import (
 
 // LDAPClientFactory an interface of factory of LDAP clients.
 type LDAPClientFactory interface {
-	DialURL(addr string, opts ...ldap.DialOpt) (client LDAPClient, err error)
+	Dial() (client LDAPClient, err error)
+	DialURL(addr string) (client LDAPClient, err error)
 }
 
 // LDAPClient is a cut down version of the ldap.Client interface with just the methods we use.
 //
 // Methods added to this interface that have a direct correlation with one from ldap.Client should have the same signature.
 type LDAPClient interface {
+	Start()
 	Close()
-	StartTLS(config *tls.Config) (err error)
+	IsClosing() (closing bool)
 
 	Bind(username, password string) (err error)
 	UnauthenticatedBind(username string) (err error)
+	SimpleBind(request *ldap.SimpleBindRequest) (result *ldap.SimpleBindResult, err error)
+	MD5Bind(host string, username string, password string) (err error)
+	DigestMD5Bind(request *ldap.DigestMD5BindRequest) (result *ldap.DigestMD5BindResult, err error)
+	ExternalBind() (err error)
+	NTLMBind(domain string, username string, password string) (err error)
+	NTLMUnauthenticatedBind(domain string, username string) (err error)
+	NTLMBindWithHash(domain string, username string, hash string) (err error)
+	NTLMChallengeBind(request *ldap.NTLMBindRequest) (result *ldap.NTLMBindResult, err error)
+	Unbind() (err error)
 
-	Modify(modifyRequest *ldap.ModifyRequest) (err error)
-	PasswordModify(pwdModifyRequest *ldap.PasswordModifyRequest) (pwdModifyResult *ldap.PasswordModifyResult, err error)
+	StartTLS(config *tls.Config) (err error)
+	TLSConnectionState() (state tls.ConnectionState, ok bool)
+	SetTimeout(timeout time.Duration)
 
-	Search(searchRequest *ldap.SearchRequest) (searchResult *ldap.SearchResult, err error)
+	WhoAmI(controls []ldap.Control) (result *ldap.WhoAmIResult, err error)
+
+	Add(request *ldap.AddRequest) (err error)
+	Del(request *ldap.DelRequest) (err error)
+	Modify(request *ldap.ModifyRequest) (err error)
+	ModifyDN(request *ldap.ModifyDNRequest) (err error)
+	ModifyWithResult(request *ldap.ModifyRequest) (result *ldap.ModifyResult, err error)
+	PasswordModify(request *ldap.PasswordModifyRequest) (result *ldap.PasswordModifyResult, err error)
+
+	Search(request *ldap.SearchRequest) (result *ldap.SearchResult, err error)
+	SearchWithPaging(request *ldap.SearchRequest, pagingSize uint32) (result *ldap.SearchResult, err error)
+
+	Compare(dn string, attribute string, value string) (match bool, err error)
+}
+
+// LDAPUserValues represents dynamically generated users values.
+type LDAPUserValues struct {
+	BaseDN                 string
+	Attributes             []string
+	FilterReplacementInput bool
+}
+
+// LDAPGroupValues represents dynamically generated groups values.
+type LDAPGroupValues struct {
+	BaseDN                    string
+	Attributes                []string
+	FilterReplacementInput    bool
+	FilterReplacementUsername bool
+	FilterReplacementDN       bool
 }
 
 // UserDetails represent the details retrieved for a given user.

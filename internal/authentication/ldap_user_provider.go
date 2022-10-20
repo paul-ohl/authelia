@@ -17,28 +17,18 @@ import (
 
 // LDAPUserProvider is a UserProvider that connects to LDAP servers like ActiveDirectory, OpenLDAP, OpenDJ, FreeIPA, etc.
 type LDAPUserProvider struct {
-	config    schema.LDAPAuthenticationBackend
-	tlsConfig *tls.Config
-	dialOpts  []ldap.DialOpt
-	log       *logrus.Logger
-	factory   LDAPClientFactory
+	config schema.LDAPAuthenticationBackend
+	tls    *tls.Config
+	log    *logrus.Logger
+
+	factory LDAPClientFactory
 
 	disableResetPassword bool
 
 	// Automatically detected LDAP features.
 	features LDAPSupportedFeatures
-
-	// Dynamically generated users values.
-	usersBaseDN                 string
-	usersAttributes             []string
-	usersFilterReplacementInput bool
-
-	// Dynamically generated groups values.
-	groupsBaseDN                    string
-	groupsAttributes                []string
-	groupsFilterReplacementInput    bool
-	groupsFilterReplacementUsername bool
-	groupsFilterReplacementDN       bool
+	users    LDAPUserValues
+	groups   LDAPGroupValues
 }
 
 // NewLDAPUserProvider creates a new instance of LDAPUserProvider.
@@ -64,13 +54,12 @@ func newLDAPUserProvider(config schema.LDAPAuthenticationBackend, disableResetPa
 	}
 
 	if factory == nil {
-		factory = NewProductionLDAPClientFactory()
+		factory = NewProductionLDAPClientFactory(config.URL, dialOpts...)
 	}
 
 	provider = &LDAPUserProvider{
 		config:               config,
-		tlsConfig:            tlsConfig,
-		dialOpts:             dialOpts,
+		tls:                  tlsConfig,
 		log:                  logging.Logger(),
 		factory:              factory,
 		disableResetPassword: disableResetPassword,
@@ -99,7 +88,7 @@ func (p *LDAPUserProvider) CheckUserPassword(username string, password string) (
 		return false, err
 	}
 
-	if clientUser, err = p.connectCustom(p.config.URL, profile.DN, password, p.config.StartTLS, p.dialOpts...); err != nil {
+	if clientUser, err = p.connectCustom(p.config.URL, profile.DN, password, p.config.StartTLS); err != nil {
 		return false, fmt.Errorf("authentication failed. Cause: %w", err)
 	}
 
@@ -137,8 +126,8 @@ func (p *LDAPUserProvider) GetDetails(username string) (details *UserDetails, er
 
 	// Search for the users groups.
 	request = ldap.NewSearchRequest(
-		p.groupsBaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
-		0, 0, false, filter, p.groupsAttributes, nil,
+		p.groups.BaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
+		0, 0, false, filter, p.groups.Attributes, nil,
 	)
 
 	if result, err = p.search(client, request); err != nil {
@@ -223,16 +212,16 @@ func (p *LDAPUserProvider) UpdatePassword(username, password string) (err error)
 }
 
 func (p *LDAPUserProvider) connect() (client LDAPClient, err error) {
-	return p.connectCustom(p.config.URL, p.config.User, p.config.Password, p.config.StartTLS, p.dialOpts...)
+	return p.connectCustom(p.config.URL, p.config.User, p.config.Password, p.config.StartTLS)
 }
 
-func (p *LDAPUserProvider) connectCustom(url, username, password string, startTLS bool, opts ...ldap.DialOpt) (client LDAPClient, err error) {
-	if client, err = p.factory.DialURL(url, opts...); err != nil {
+func (p *LDAPUserProvider) connectCustom(url, username, password string, startTLS bool) (client LDAPClient, err error) {
+	if client, err = p.factory.DialURL(url); err != nil {
 		return nil, fmt.Errorf("dial failed with error: %w", err)
 	}
 
 	if startTLS {
-		if err = client.StartTLS(p.tlsConfig); err != nil {
+		if err = client.StartTLS(p.tls); err != nil {
 			client.Close()
 
 			return nil, fmt.Errorf("starttls failed with error: %w", err)
@@ -288,7 +277,7 @@ func (p *LDAPUserProvider) searchReferral(referral string, request *ldap.SearchR
 		result *ldap.SearchResult
 	)
 
-	if client, err = p.connectCustom(referral, p.config.User, p.config.Password, p.config.StartTLS, p.dialOpts...); err != nil {
+	if client, err = p.connectCustom(referral, p.config.User, p.config.Password, p.config.StartTLS); err != nil {
 		return fmt.Errorf("error occurred connecting to referred LDAP server '%s': %w", referral, err)
 	}
 
@@ -322,8 +311,8 @@ func (p *LDAPUserProvider) getUserProfile(client LDAPClient, username string) (p
 
 	// Search for the given username.
 	request := ldap.NewSearchRequest(
-		p.usersBaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
-		1, 0, false, userFilter, p.usersAttributes, nil,
+		p.users.BaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
+		1, 0, false, userFilter, p.users.Attributes, nil,
 	)
 
 	var result *ldap.SearchResult
@@ -388,7 +377,7 @@ func (p *LDAPUserProvider) getUserProfile(client LDAPClient, username string) (p
 func (p *LDAPUserProvider) resolveUsersFilter(username string) (filter string) {
 	filter = p.config.UsersFilter
 
-	if p.usersFilterReplacementInput {
+	if p.users.FilterReplacementInput {
 		// The {input} placeholder is replaced by the username input.
 		filter = strings.ReplaceAll(filter, ldapPlaceholderInput, ldapEscape(username))
 	}
@@ -401,17 +390,17 @@ func (p *LDAPUserProvider) resolveUsersFilter(username string) (filter string) {
 func (p *LDAPUserProvider) resolveGroupsFilter(username string, profile *ldapUserProfile) (filter string, err error) { //nolint:unparam
 	filter = p.config.GroupsFilter
 
-	if p.groupsFilterReplacementInput {
+	if p.groups.FilterReplacementInput {
 		// The {input} placeholder is replaced by the users username input.
 		filter = strings.ReplaceAll(p.config.GroupsFilter, ldapPlaceholderInput, ldapEscape(username))
 	}
 
 	if profile != nil {
-		if p.groupsFilterReplacementUsername {
+		if p.groups.FilterReplacementUsername {
 			filter = strings.ReplaceAll(filter, ldapPlaceholderUsername, ldap.EscapeFilter(profile.Username))
 		}
 
-		if p.groupsFilterReplacementDN {
+		if p.groups.FilterReplacementDN {
 			filter = strings.ReplaceAll(filter, ldapPlaceholderDistinguishedName, ldap.EscapeFilter(profile.DN))
 		}
 	}
@@ -439,7 +428,7 @@ func (p *LDAPUserProvider) modify(client LDAPClient, modifyRequest *ldap.ModifyR
 			errRef    error
 		)
 
-		if clientRef, errRef = p.connectCustom(referral, p.config.User, p.config.Password, p.config.StartTLS, p.dialOpts...); errRef != nil {
+		if clientRef, errRef = p.connectCustom(referral, p.config.User, p.config.Password, p.config.StartTLS); errRef != nil {
 			return fmt.Errorf("error occurred connecting to referred LDAP server '%s': %+v. Original Error: %w", referral, errRef, err)
 		}
 
@@ -473,7 +462,7 @@ func (p *LDAPUserProvider) pwdModify(client LDAPClient, pwdModifyRequest *ldap.P
 			errRef    error
 		)
 
-		if clientRef, errRef = p.connectCustom(referral, p.config.User, p.config.Password, p.config.StartTLS, p.dialOpts...); errRef != nil {
+		if clientRef, errRef = p.connectCustom(referral, p.config.User, p.config.Password, p.config.StartTLS); errRef != nil {
 			return fmt.Errorf("error occurred connecting to referred LDAP server '%s': %+v. Original Error: %w", referral, errRef, err)
 		}
 

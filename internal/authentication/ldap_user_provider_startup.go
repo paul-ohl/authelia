@@ -96,58 +96,58 @@ func (p *LDAPUserProvider) parseDynamicUsersConfiguration() {
 
 	p.log.Tracef("Dynamically generated users filter is %s", p.config.UsersFilter)
 
-	if !utils.IsStringInSlice(p.config.UsernameAttribute, p.usersAttributes) {
-		p.usersAttributes = append(p.usersAttributes, p.config.UsernameAttribute)
+	if !utils.IsStringInSlice(p.config.UsernameAttribute, p.users.Attributes) {
+		p.users.Attributes = append(p.users.Attributes, p.config.UsernameAttribute)
 	}
 
-	if !utils.IsStringInSlice(p.config.MailAttribute, p.usersAttributes) {
-		p.usersAttributes = append(p.usersAttributes, p.config.MailAttribute)
+	if !utils.IsStringInSlice(p.config.MailAttribute, p.users.Attributes) {
+		p.users.Attributes = append(p.users.Attributes, p.config.MailAttribute)
 	}
 
-	if !utils.IsStringInSlice(p.config.DisplayNameAttribute, p.usersAttributes) {
-		p.usersAttributes = append(p.usersAttributes, p.config.DisplayNameAttribute)
+	if !utils.IsStringInSlice(p.config.DisplayNameAttribute, p.users.Attributes) {
+		p.users.Attributes = append(p.users.Attributes, p.config.DisplayNameAttribute)
 	}
 
 	if p.config.AdditionalUsersDN != "" {
-		p.usersBaseDN = p.config.AdditionalUsersDN + "," + p.config.BaseDN
+		p.users.BaseDN = p.config.AdditionalUsersDN + "," + p.config.BaseDN
 	} else {
-		p.usersBaseDN = p.config.BaseDN
+		p.users.BaseDN = p.config.BaseDN
 	}
 
-	p.log.Tracef("Dynamically generated users BaseDN is %s", p.usersBaseDN)
+	p.log.Tracef("Dynamically generated users BaseDN is %s", p.users.BaseDN)
 
 	if strings.Contains(p.config.UsersFilter, ldapPlaceholderInput) {
-		p.usersFilterReplacementInput = true
+		p.users.FilterReplacementInput = true
 	}
 
 	p.log.Tracef("Detected user filter replacements that need to be resolved per lookup are: %s=%v",
-		ldapPlaceholderInput, p.usersFilterReplacementInput)
+		ldapPlaceholderInput, p.users.FilterReplacementInput)
 }
 
 func (p *LDAPUserProvider) parseDynamicGroupsConfiguration() {
-	p.groupsAttributes = []string{
+	p.groups.Attributes = []string{
 		p.config.GroupNameAttribute,
 	}
 
 	if p.config.AdditionalGroupsDN != "" {
-		p.groupsBaseDN = ldap.EscapeFilter(p.config.AdditionalGroupsDN + "," + p.config.BaseDN)
+		p.groups.BaseDN = ldap.EscapeFilter(p.config.AdditionalGroupsDN + "," + p.config.BaseDN)
 	} else {
-		p.groupsBaseDN = p.config.BaseDN
+		p.groups.BaseDN = p.config.BaseDN
 	}
 
-	p.log.Tracef("Dynamically generated groups BaseDN is %s", p.groupsBaseDN)
+	p.log.Tracef("Dynamically generated groups BaseDN is %s", p.groups.BaseDN)
 
 	if strings.Contains(p.config.GroupsFilter, ldapPlaceholderInput) {
-		p.groupsFilterReplacementInput = true
+		p.groups.FilterReplacementInput = true
 	}
 
 	if strings.Contains(p.config.GroupsFilter, ldapPlaceholderUsername) {
-		p.groupsFilterReplacementUsername = true
+		p.groups.FilterReplacementUsername = true
 	}
 
 	if strings.Contains(p.config.GroupsFilter, ldapPlaceholderDistinguishedName) {
-		p.groupsFilterReplacementDN = true
+		p.groups.FilterReplacementDN = true
 	}
 
-	p.log.Tracef("Detected group filter replacements that need to be resolved per lookup are: input=%v, username=%v, dn=%v", p.groupsFilterReplacementInput, p.groupsFilterReplacementUsername, p.groupsFilterReplacementDN)
+	p.log.Tracef("Detected group filter replacements that need to be resolved per lookup are: input=%v, username=%v, dn=%v", p.groups.FilterReplacementInput, p.groups.FilterReplacementUsername, p.groups.FilterReplacementDN)
 }

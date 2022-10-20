@@ -33,7 +33,7 @@ func TestShouldCreateRawConnectionWhenSchemeIsLDAP(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -65,7 +65,7 @@ func TestShouldCreateTLSConnectionWhenSchemeIsLDAPS(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldaps://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldaps://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -179,7 +179,7 @@ func TestShouldCheckLDAPServerExtensions(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -244,7 +244,7 @@ func TestShouldNotCheckLDAPServerExtensionsWhenRootDSEReturnsMoreThanOneEntry(t 
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -310,7 +310,7 @@ func TestShouldCheckLDAPServerControlTypes(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -375,7 +375,7 @@ func TestShouldNotEnablePasswdModifyExtensionOrControlTypes(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -440,7 +440,7 @@ func TestShouldReturnCheckServerConnectError(t *testing.T) {
 		mockFactory)
 
 	mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, errors.New("could not connect"))
 
 	err := ldapClient.StartupCheck()
@@ -473,7 +473,7 @@ func TestShouldReturnCheckServerSearchError(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -568,10 +568,10 @@ func TestShouldReturnEmailWhenAttributeSameAsUsername(t *testing.T) {
 		nil,
 		mockFactory)
 
-	assert.Equal(t, []string{"mail", "displayName"}, ldapClient.usersAttributes)
+	assert.Equal(t, []string{"mail", "displayName"}, ldapClient.users.Attributes)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -639,10 +639,10 @@ func TestShouldReturnUsernameAndBlankDisplayNameWhenAttributesTheSame(t *testing
 		nil,
 		mockFactory)
 
-	assert.Equal(t, []string{"uid", "mail"}, ldapClient.usersAttributes)
+	assert.Equal(t, []string{"uid", "mail"}, ldapClient.users.Attributes)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -710,10 +710,10 @@ func TestShouldReturnBlankEmailAndDisplayNameWhenAttrsLenZero(t *testing.T) {
 		nil,
 		mockFactory)
 
-	assert.Equal(t, []string{"uid", "mail", "displayName"}, ldapClient.usersAttributes)
+	assert.Equal(t, []string{"uid", "mail", "displayName"}, ldapClient.users.Attributes)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -785,9 +785,9 @@ func TestShouldCombineUsernameFilterAndUsersFilter(t *testing.T) {
 		nil,
 		mockFactory)
 
-	assert.Equal(t, []string{"uid", "mail", "displayName"}, ldapClient.usersAttributes)
+	assert.Equal(t, []string{"uid", "mail", "displayName"}, ldapClient.users.Attributes)
 
-	assert.True(t, ldapClient.usersFilterReplacementInput)
+	assert.True(t, ldapClient.users.FilterReplacementInput)
 
 	mockClient.EXPECT().
 		Search(NewSearchRequestMatcher("(&(uid=john)(&(objectCategory=person)(objectClass=user)))")).
@@ -837,7 +837,7 @@ func TestShouldNotCrashWhenGroupsAreNotRetrievedFromLDAP(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -907,7 +907,7 @@ func TestShouldNotCrashWhenEmailsAreNotRetrievedFromLDAP(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -970,7 +970,7 @@ func TestShouldReturnUsernameFromLDAP(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1044,7 +1044,7 @@ func TestShouldReturnUsernameFromLDAPWithReferrals(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1065,7 +1065,7 @@ func TestShouldReturnUsernameFromLDAPWithReferrals(t *testing.T) {
 		}, nil)
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.2.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.2.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -1136,7 +1136,7 @@ func TestShouldReturnUsernameFromLDAPWithReferralsInErrorAndResult(t *testing.T)
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1157,7 +1157,7 @@ func TestShouldReturnUsernameFromLDAPWithReferralsInErrorAndResult(t *testing.T)
 		}, &ldap.Error{ResultCode: ldap.LDAPResultReferral, Err: errors.New("referral"), Packet: &testBERPacketReferral})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.2.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.2.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -1191,7 +1191,7 @@ func TestShouldReturnUsernameFromLDAPWithReferralsInErrorAndResult(t *testing.T)
 		}, nil)
 
 	dialURLReferralAlt := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(mockClientReferralAlt, nil)
 
 	connBindReferralAlt := mockClientReferralAlt.EXPECT().
@@ -1261,7 +1261,7 @@ func TestShouldReturnUsernameFromLDAPWithReferralsErr(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1279,7 +1279,7 @@ func TestShouldReturnUsernameFromLDAPWithReferralsErr(t *testing.T) {
 		Return(&ldap.SearchResult{}, &ldap.Error{ResultCode: ldap.LDAPResultReferral, Err: errors.New("referral"), Packet: &testBERPacketReferral})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -1348,7 +1348,7 @@ func TestShouldNotUpdateUserPasswordConnect(t *testing.T) {
 		mockFactory)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1378,7 +1378,7 @@ func TestShouldNotUpdateUserPasswordConnect(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(nil, errors.New("tcp timeout"))
 
 	gomock.InOrder(dialURLOIDs, connBindOIDs, searchOIDs, connCloseOIDs, dialURL)
@@ -1415,7 +1415,7 @@ func TestShouldNotUpdateUserPasswordGetDetails(t *testing.T) {
 		mockFactory)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1445,7 +1445,7 @@ func TestShouldNotUpdateUserPasswordGetDetails(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1498,7 +1498,7 @@ func TestShouldUpdateUserPassword(t *testing.T) {
 	modifyRequest.Replace(ldapAttributeUserPassword, []string{"password"})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1528,7 +1528,7 @@ func TestShouldUpdateUserPassword(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1607,7 +1607,7 @@ func TestShouldUpdateUserPasswordMSAD(t *testing.T) {
 	modifyRequest.Replace(ldapAttributeUnicodePwd, []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1637,7 +1637,7 @@ func TestShouldUpdateUserPasswordMSAD(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1718,7 +1718,7 @@ func TestShouldUpdateUserPasswordMSADWithReferrals(t *testing.T) {
 	modifyRequest.Replace(ldapAttributeUnicodePwd, []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1748,7 +1748,7 @@ func TestShouldUpdateUserPasswordMSADWithReferrals(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1790,7 +1790,7 @@ func TestShouldUpdateUserPasswordMSADWithReferrals(t *testing.T) {
 		})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -1846,7 +1846,7 @@ func TestShouldUpdateUserPasswordMSADWithReferralsWithReferralConnectErr(t *test
 	modifyRequest.Replace(ldapAttributeUnicodePwd, []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1876,7 +1876,7 @@ func TestShouldUpdateUserPasswordMSADWithReferralsWithReferralConnectErr(t *test
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -1918,7 +1918,7 @@ func TestShouldUpdateUserPasswordMSADWithReferralsWithReferralConnectErr(t *test
 		})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(nil, errors.New("tcp timeout"))
 
 	gomock.InOrder(dialURLOIDs, connBindOIDs, searchOIDs, connCloseOIDs, dialURL, connBind, searchProfile, modify, dialURLReferral, connClose)
@@ -1965,7 +1965,7 @@ func TestShouldUpdateUserPasswordMSADWithReferralsWithReferralModifyErr(t *testi
 	modifyRequest.Replace(ldapAttributeUnicodePwd, []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -1995,7 +1995,7 @@ func TestShouldUpdateUserPasswordMSADWithReferralsWithReferralModifyErr(t *testi
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2037,7 +2037,7 @@ func TestShouldUpdateUserPasswordMSADWithReferralsWithReferralModifyErr(t *testi
 		})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -2097,7 +2097,7 @@ func TestShouldUpdateUserPasswordMSADWithoutReferrals(t *testing.T) {
 	modifyRequest.Replace(ldapAttributeUnicodePwd, []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2127,7 +2127,7 @@ func TestShouldUpdateUserPasswordMSADWithoutReferrals(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2207,7 +2207,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtension(t *testing.T) {
 	)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2237,7 +2237,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtension(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2315,7 +2315,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferrals(t *testing.T
 	)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2345,7 +2345,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferrals(t *testing.T
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2389,7 +2389,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferrals(t *testing.T
 		})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -2442,7 +2442,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithoutReferrals(t *testin
 	)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2472,7 +2472,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithoutReferrals(t *testin
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2555,7 +2555,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferralsReferralConne
 	)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2585,7 +2585,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferralsReferralConne
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2629,7 +2629,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferralsReferralConne
 		})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(nil, errors.New("tcp timeout"))
 
 	gomock.InOrder(dialURLOIDs, connBindOIDs, searchOIDs, connCloseOIDs, dialURL, connBind, searchProfile, passwdModify, dialURLReferral, connClose)
@@ -2673,7 +2673,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferralsReferralPassw
 	)
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2703,7 +2703,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferralsReferralPassw
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2747,7 +2747,7 @@ func TestShouldUpdateUserPasswordPasswdModifyExtensionWithReferralsReferralPassw
 		})
 
 	dialURLReferral := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://192.168.0.1"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://192.168.0.1")).
 		Return(mockClientReferral, nil)
 
 	connBindReferral := mockClientReferral.EXPECT().
@@ -2808,7 +2808,7 @@ func TestShouldUpdateUserPasswordActiveDirectoryWithServerPolicyHints(t *testing
 	modifyRequest.Replace("unicodePwd", []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2838,7 +2838,7 @@ func TestShouldUpdateUserPasswordActiveDirectoryWithServerPolicyHints(t *testing
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -2919,7 +2919,7 @@ func TestShouldUpdateUserPasswordActiveDirectoryWithServerPolicyHintsDeprecated(
 	modifyRequest.Replace("unicodePwd", []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -2949,7 +2949,7 @@ func TestShouldUpdateUserPasswordActiveDirectoryWithServerPolicyHintsDeprecated(
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -3030,7 +3030,7 @@ func TestShouldUpdateUserPasswordActiveDirectory(t *testing.T) {
 	modifyRequest.Replace("unicodePwd", []string{pwdEncoded})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -3060,7 +3060,7 @@ func TestShouldUpdateUserPasswordActiveDirectory(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -3138,7 +3138,7 @@ func TestShouldUpdateUserPasswordBasic(t *testing.T) {
 	modifyRequest.Replace("userPassword", []string{"password"})
 
 	dialURLOIDs := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBindOIDs := mockClient.EXPECT().
@@ -3168,7 +3168,7 @@ func TestShouldUpdateUserPasswordBasic(t *testing.T) {
 	connCloseOIDs := mockClient.EXPECT().Close()
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -3238,7 +3238,7 @@ func TestShouldReturnErrorWhenMultipleUsernameAttributes(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -3304,7 +3304,7 @@ func TestShouldReturnErrorWhenZeroUsernameAttributes(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -3370,7 +3370,7 @@ func TestShouldReturnErrorWhenUsernameAttributeNotReturned(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -3432,7 +3432,7 @@ func TestShouldReturnErrorWhenMultipleUsersFound(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -3515,7 +3515,7 @@ func TestShouldReturnErrorWhenNoDN(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -3582,7 +3582,7 @@ func TestShouldCheckValidUserPassword(t *testing.T) {
 
 	gomock.InOrder(
 		mockFactory.EXPECT().
-			DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+			DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 			Return(mockClient, nil),
 		mockClient.EXPECT().
 			Bind(gomock.Eq("cn=admin,dc=example,dc=com"), gomock.Eq("password")).
@@ -3611,7 +3611,7 @@ func TestShouldCheckValidUserPassword(t *testing.T) {
 				},
 			}, nil),
 		mockFactory.EXPECT().
-			DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+			DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 			Return(mockClient, nil),
 		mockClient.EXPECT().
 			Bind(gomock.Eq("uid=test,dc=example,dc=com"), gomock.Eq("password")).
@@ -3649,7 +3649,7 @@ func TestShouldNotCheckValidUserPasswordWithConnectError(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	bind := mockClient.EXPECT().
@@ -3689,7 +3689,7 @@ func TestShouldCheckInvalidUserPassword(t *testing.T) {
 
 	gomock.InOrder(
 		mockFactory.EXPECT().
-			DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+			DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 			Return(mockClient, nil),
 		mockClient.EXPECT().
 			Bind(gomock.Eq("cn=admin,dc=example,dc=com"), gomock.Eq("password")).
@@ -3718,7 +3718,7 @@ func TestShouldCheckInvalidUserPassword(t *testing.T) {
 				},
 			}, nil),
 		mockFactory.EXPECT().
-			DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+			DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 			Return(mockClient, nil),
 		mockClient.EXPECT().
 			Bind(gomock.Eq("uid=test,dc=example,dc=com"), gomock.Eq("password")).
@@ -3757,7 +3757,7 @@ func TestShouldCallStartTLSWhenEnabled(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -3765,7 +3765,7 @@ func TestShouldCallStartTLSWhenEnabled(t *testing.T) {
 		Return(nil)
 
 	connStartTLS := mockClient.EXPECT().
-		StartTLS(ldapClient.tlsConfig)
+		StartTLS(ldapClient.tls)
 
 	connClose := mockClient.EXPECT().Close()
 
@@ -3833,16 +3833,16 @@ func TestShouldParseDynamicConfiguration(t *testing.T) {
 		nil,
 		mockFactory)
 
-	assert.True(t, ldapClient.groupsFilterReplacementInput)
-	assert.True(t, ldapClient.groupsFilterReplacementUsername)
-	assert.True(t, ldapClient.groupsFilterReplacementDN)
+	assert.True(t, ldapClient.groups.FilterReplacementInput)
+	assert.True(t, ldapClient.groups.FilterReplacementUsername)
+	assert.True(t, ldapClient.groups.FilterReplacementDN)
 
-	assert.True(t, ldapClient.usersFilterReplacementInput)
+	assert.True(t, ldapClient.users.FilterReplacementInput)
 
 	assert.Equal(t, "(&(|(uid={input})(mail={input})(displayName={input}))(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2)(!pwdLastSet=0))", ldapClient.config.UsersFilter)
 	assert.Equal(t, "(&(|(member={dn})(member={input})(member={username}))(objectClass=group))", ldapClient.config.GroupsFilter)
-	assert.Equal(t, "ou=users,dc=example,dc=com", ldapClient.usersBaseDN)
-	assert.Equal(t, "ou=groups,dc=example,dc=com", ldapClient.groupsBaseDN)
+	assert.Equal(t, "ou=users,dc=example,dc=com", ldapClient.users.BaseDN)
+	assert.Equal(t, "ou=groups,dc=example,dc=com", ldapClient.groups.BaseDN)
 }
 
 func TestShouldCallStartTLSWithInsecureSkipVerifyWhenSkipVerifyTrue(t *testing.T) {
@@ -3872,12 +3872,12 @@ func TestShouldCallStartTLSWithInsecureSkipVerifyWhenSkipVerifyTrue(t *testing.T
 		nil,
 		mockFactory)
 
-	assert.False(t, ldapClient.groupsFilterReplacementInput)
-	assert.False(t, ldapClient.groupsFilterReplacementUsername)
-	assert.False(t, ldapClient.groupsFilterReplacementDN)
+	assert.False(t, ldapClient.groups.FilterReplacementInput)
+	assert.False(t, ldapClient.groups.FilterReplacementUsername)
+	assert.False(t, ldapClient.groups.FilterReplacementDN)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldap://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldap://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connBind := mockClient.EXPECT().
@@ -3885,7 +3885,7 @@ func TestShouldCallStartTLSWithInsecureSkipVerifyWhenSkipVerifyTrue(t *testing.T
 		Return(nil)
 
 	connStartTLS := mockClient.EXPECT().
-		StartTLS(ldapClient.tlsConfig)
+		StartTLS(ldapClient.tls)
 
 	connClose := mockClient.EXPECT().Close()
 
@@ -3956,11 +3956,11 @@ func TestShouldReturnLDAPSAlreadySecuredWhenStartTLSAttempted(t *testing.T) {
 		mockFactory)
 
 	dialURL := mockFactory.EXPECT().
-		DialURL(gomock.Eq("ldaps://127.0.0.1:389"), gomock.Any()).
+		DialURL(gomock.Eq("ldaps://127.0.0.1:389")).
 		Return(mockClient, nil)
 
 	connStartTLS := mockClient.EXPECT().
-		StartTLS(ldapClient.tlsConfig).
+		StartTLS(ldapClient.tls).
 		Return(errors.New("LDAP Result Code 200 \"Network Error\": ldap: already encrypted"))
 
 	gomock.InOrder(dialURL, connStartTLS, mockClient.EXPECT().Close())
