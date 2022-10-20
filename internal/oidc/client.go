@@ -1,6 +1,8 @@
 package oidc
 
 import (
+	"fmt"
+
 	"github.com/ory/fosite"
 
 	"github.com/authelia/authelia/v4/internal/authentication"
@@ -29,8 +31,10 @@ func NewClient(config schema.OpenIDConnectClientConfiguration) (client *Client) 
 
 		Policy: authorization.StringToLevel(config.Policy),
 
-		Consent: NewClientConsent(config.ConsentMode, config.ConsentPreConfiguredDuration),
+		Consent: NewClientConsent(config.Consent.Mode, config.Consent.PreConfiguredDuration),
 	}
+
+	fmt.Printf("new client with consent mode %s and pre conf %v", config.Consent.Mode, config.Consent.PreConfiguredDuration)
 
 	for _, mode := range config.ResponseModes {
 		client.ResponseModes = append(client.ResponseModes, fosite.ResponseModeType(mode))
